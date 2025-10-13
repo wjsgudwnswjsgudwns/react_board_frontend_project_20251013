@@ -16,8 +16,8 @@
 
 .navbar .menu a,
 .navbar .menu button {
-    text-align: none;
-    background-color: none;
+    text-decoration: none;
+    background: none;
     border: none;
     cursor: pointer;
     font-size: 14px;
@@ -26,6 +26,6 @@
 }
 
 .navbar .menu a:hover,
-.navbar .menu button:hover{
+.navbar .menu button:hover {
     text-decoration: underline;
 }
