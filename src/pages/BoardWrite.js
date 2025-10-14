@@ -28,10 +28,10 @@ function BoardWrite ({user}) {
     return (
         <div className="write-container">
             <h2>글쓰기</h2>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="write-form">
                 <input type="text" placeholder="제목" value={title} onChange={(e) => setTitle(e.target.value)}></input>
                 <textarea placeholder="내용" value={content} onChange={(e) => setContent(e.target.value)}></textarea>
-                <div>
+                <div className="button-group">
                     <button type="submit">등록</button>
                     <button type="button" onClick={() => navigate("/board")}>취소</button>
                 </div>
