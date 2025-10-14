@@ -13,7 +13,8 @@ function Login ({onLogin}) {
     const handleLogin = async(e) => {
         e.preventDefault(); // submit 눌렀을때 초기화 되는 것을 막음 -> 자세한 내용은 Signup.js
         try {
-            await api.post("/api/auth/login", new URLSearchParams({username,password})) // SecurityConfig에 경로 지정해둠
+            await api.post("/api/auth/login", new URLSearchParams({username,password})) 
+            // SecurityConfig에 경로 지정해둠, 폼 데이터 전송 방식일때는 URLSearchParams를 써줘야함
 
             //로그인한 사용자 정보 가져오기
             const res = await api.get("/api/auth/me");
