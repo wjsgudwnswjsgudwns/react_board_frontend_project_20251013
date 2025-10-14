@@ -46,3 +46,13 @@ h2 {
     background-color: #1871be;
     color: white;
 }
+
+.click-title {
+    cursor: pointer;
+    color: #1e88e5;
+}
+
+.click-title:hover {
+    text-decoration: underline;
+    font-weight: bold;
+}
