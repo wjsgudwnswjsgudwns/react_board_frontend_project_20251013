@@ -30,3 +30,15 @@
     white-space: pre-wrap; /* 줄 바꿈 유지 */
     line-height: 1.5;
 }
+
+.list-button:hover {
+    background-color: #1871be;
+}
+
+.delete-button:hover{
+    background-color: #582828;
+}
+
+.edit-button:hover {
+    background-color: #1871be;
+}
