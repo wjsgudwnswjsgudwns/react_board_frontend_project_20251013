@@ -1,7 +1,7 @@
 import "./BoardDetail.css"
 
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { replace, useNavigate, useParams } from "react-router-dom";
 import api from "../api/axiosConfig";
 
 function BoardDetail({user}) {
@@ -31,6 +31,24 @@ function BoardDetail({user}) {
         loadPost();
     },[id]);
 
+    const handleDelete = async() => {
+        try{
+            if(window.confirm("정말 삭제하시겠습니까?")) {
+                await api.delete(`/api/board/${id}`);
+                alert("삭제 되었습니다.")
+                navigate("/board", {replace:true});
+            }
+        } catch (err) {
+            console.error(err);
+            if(err.response.state === 403) {
+                alert("삭제 권한이 없습니다.");
+            } else {
+                alert("삭제 실패 했습니다.")
+            }
+        }
+        
+    };
+
     if(loading) return <p>게시글 불러오는 중</p>
     if(error) return <p style={{color:"red"}}>{error}</p>
     if(!post) return <p style={{color:"red"}}>존재하지 않는 글입니다.</p>
@@ -49,8 +67,8 @@ function BoardDetail({user}) {
                 <button onClick={() => navigate("/board")}>목록</button>
                 { isAuthor && (
                 <>
-                    {<button>수정</button>}
-                    {<button>삭제</button>}
+                    {<button className="edit-button">수정</button>}
+                    {<button className="delete-button" onClick={handleDelete}>삭제</button>}
                 </>
                 )}
             </div>
