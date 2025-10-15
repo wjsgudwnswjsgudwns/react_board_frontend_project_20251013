@@ -1,6 +1,6 @@
-    import { useEffect, useState } from "react";
-    import "./Board.css"
-    import api from "../api/axiosConfig";
+import { useEffect, useState } from "react";
+import "./Board.css"
+import api from "../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
 
     function Board({user}) {
@@ -9,12 +9,19 @@ import { useNavigate } from "react-router-dom";
         const [loading,setLoading] = useState(true);
         const [error,setError] = useState("");
 
+        const[currentPage,setCurrentPage] = useState(0);
+        const[totalPages,setTotalPages] = useState();
+        const[totalItems,setTotalItems] = useState();
+
         // 게시판 모든 글 요청
-        const loadPosts = async () => {
+        const loadPosts = async (page = 0) => {
             try {
                 setLoading(true);
-                const res = await api.get("/api/board"); // 모든 게시글 가져오기
-                setPosts(res.data); // posts -> 전체 게시글
+                const res = await api.get(`/api/board?page=${page}&size=10`); // 모든 게시글 가져오기
+                setPosts(res.data.posts); // posts -> 전체 게시글
+                setCurrentPage(res.data.currentPage); // 현재 페이지
+                setTotalPages(res.data.totalPages); // 전체 페이지
+                setTotalItems(res.data.totalItems); // 전체 글 수
             } catch (err) {
                 console.error(err);
                 setError("게시글을 불러오는데 실패했습니다.");
@@ -33,8 +40,19 @@ import { useNavigate } from "react-router-dom";
         };
 
         useEffect(() => {
-            loadPosts();
-        },[])
+            loadPosts(currentPage);
+        },[currentPage])
+
+        // 페이지 번호 표시 함수
+        const getPageNumbers = () => {
+            const start = (Math.floor((currentPage)/10))*10;
+            const end = Math.min(start+10, totalPages);
+            const pages = [];
+            for (let i = start; i < end; i++) {
+                pages.push(i);
+            }
+            return pages;
+        }
 
         // 날짜 포맷 함수
         const formatDate = (dateString) => {
@@ -81,6 +99,15 @@ import { useNavigate } from "react-router-dom";
                         }
                     </tbody>
                 </table>
+
+                <div className="pagination">
+                    <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 0}>&lt;</button>
+                    {getPageNumbers().map((num)=>(
+                        <button key={num} onClick={() => setCurrentPage(num)}>{num+1}</button>
+                    ))}
+                    <button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === (totalPages-1) || totalPages === 0}>&gt;</button>
+                </div>
+
                 <div className="write-button-container">
                     <button onClick={handleWrite} className="write-button">글쓰기</button>
                 </div>
