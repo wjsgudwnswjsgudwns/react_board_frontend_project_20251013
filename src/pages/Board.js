@@ -100,12 +100,16 @@ import { useNavigate } from "react-router-dom";
                     </tbody>
                 </table>
 
-                <div className="pagination">
+                <div className="pagnation">
+                    <button onClick={() => setCurrentPage(0)} disabled={currentPage === 0}>&lt;&lt;</button>
                     <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 0}>&lt;</button>
+                    
                     {getPageNumbers().map((num)=>(
-                        <button key={num} onClick={() => setCurrentPage(num)}>{num+1}</button>
+                        <button className={num===currentPage ? "active" : ""} key={num} onClick={() => setCurrentPage(num)}>{num+1}</button>
                     ))}
+
                     <button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === (totalPages-1) || totalPages === 0}>&gt;</button>
+                    <button onClick={() => setCurrentPage(totalPages-1)} disabled={currentPage === totalPages-1}>&gt;&gt;</button>
                 </div>
 
                 <div className="write-button-container">
