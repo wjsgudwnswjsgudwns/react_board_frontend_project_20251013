@@ -9,9 +9,9 @@ import { useNavigate } from "react-router-dom";
         const [loading,setLoading] = useState(true);
         const [error,setError] = useState("");
 
-        const[currentPage,setCurrentPage] = useState(0);
-        const[totalPages,setTotalPages] = useState();
-        const[totalItems,setTotalItems] = useState();
+        const[currentPage,setCurrentPage] = useState(0); // 현재 페이지 번호
+        const[totalPages,setTotalPages] = useState(0); // 모든 페이지 갯수
+        const[totalItems,setTotalItems] = useState(0); // 모든 글의 갯수
 
         // 게시판 모든 글 요청
         const loadPosts = async (page = 0) => {
@@ -80,10 +80,9 @@ import { useNavigate } from "react-router-dom";
                         {posts.length > 0 ? (
                             posts
                             .slice()
-                            .reverse() // 최신글이 위로 오게
                             .map((p,index) => (
                             <tr key={p.id}>
-                                <td>{posts.length - index}</td>
+                                <td>{totalItems - index - (currentPage*10)}</td>
                                 <td className="click-title" onClick={() => navigate(`/board/${p.id}`)}>
                                     {p.title}
                                 </td>
