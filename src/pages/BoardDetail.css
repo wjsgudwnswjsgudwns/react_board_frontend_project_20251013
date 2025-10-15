@@ -42,3 +42,27 @@
 .edit-button:hover {
     background-color: #1871be;
 }
+
+/* 글 수정 */
+.edit-form input {
+    width: 100%;
+    border: 1px solid #dddddd;
+    margin-bottom: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    padding: 10px;
+    height: 40px;
+    box-sizing: border-box;
+}
+
+.edit-form textarea {
+    width: 100%;
+    border: 1px solid #dddddd;
+    margin-bottom: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    padding: 10px;
+    min-height: 120px;
+    resize: vertical;
+    box-sizing: border-box;
+}
