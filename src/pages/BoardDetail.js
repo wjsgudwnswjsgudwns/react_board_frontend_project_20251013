@@ -78,6 +78,37 @@ function BoardDetail({user}) {
         }
     }
 
+    // 댓글 영역
+    const[newComment, setNewComment] =useState(""); // 새 댓글 등록
+    const[comments,setComments] = useState([]); // 기존 댓글
+    const[editCommentContent,setEditCommentContent] = useState("");
+    const[editCommentId,setEditCommentId] = useState(null);
+
+    // const isCommentAuthor = user && user === comments.author.username;
+
+    // 날짜 포맷 함수
+    const formatDate = (dateString) => {
+        
+        return dateString.substring(0,10);
+    }
+
+    // 댓글 등록
+    const handleCommentSubmit = () => {
+
+    }
+
+    // 댓글 삭제
+    const handleCommentDelete = (commentId) => {
+
+    }
+
+    // 댓글 수정
+    const handleCommentUpdate = () => {
+
+    }
+
+    // 댓글 영역
+
     if(loading) return <p>게시글 불러오는 중</p>
     if(error) return <p style={{color:"red"}}>{error}</p>
     if(!post) return <p style={{color:"red"}}>존재하지 않는 글입니다.</p>
@@ -116,6 +147,48 @@ function BoardDetail({user}) {
                         </>
                         )}
                     </div>
+
+                    {/* 댓글 영역 시작 */}
+                    <div className="comment-section">
+                        {/* 댓글 입력 세션 */}
+                        <h3>댓글</h3>
+                        <form onSubmit={handleCommentSubmit} className="comment-form">
+                            <textarea placeholder="댓글" value={newComment} onChange={(e) => setNewComment(e.target.value)}></textarea>
+                            <button type="submit" className="comment-button">등록</button>
+                        </form>
+
+                        {/* 댓글 리스트 세션 */}
+                        <ul className="comment-list">
+                            {comments.map((c)=>(
+                                <li key={c.id} className="comment-item">
+                                    <div className="comment-header">
+                                        <span className="comment-author">
+                                            {c.author.username}
+                                        </span>
+                                        <span className="comment-date">
+                                            {formatDate(c.createDate)}
+                                        </span>
+                                    </div>
+                                    
+                                    <div className="comment-content">
+                                        {c.content}
+                                    </div>
+
+                                    <div className="button-group">
+                                        <button onClick={() => navigate("/board")} className="list-button">목록</button>
+                                        { user === c.author.username && (
+                                        <>
+                                            {<button className="edit-button" onClick={() => handleCommentSubmit(c)}>수정</button>}
+                                            {<button className="delete-button" onClick={handleCommentDelete(c.id)}>삭제</button>}
+                                        </>
+                                        )}
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    {/* 댓글 영역 끝 */}
+
                 </>
             )}
 
