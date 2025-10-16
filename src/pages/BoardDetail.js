@@ -35,7 +35,8 @@ function BoardDetail({user}) {
     };
 
     useEffect(() => {
-        loadPost();
+        loadPost(); // 게시글 다시 불러오기
+        loadComments(); // 게시글에 달린 댓글 다시 불러오기
     },[id]);
 
     //삭제
@@ -78,11 +79,12 @@ function BoardDetail({user}) {
         }
     }
 
-    // 댓글 영역
-    const[newComment, setNewComment] =useState(""); // 새 댓글 등록
-    const[comments,setComments] = useState([]); // 기존 댓글
-    const[editCommentContent,setEditCommentContent] = useState("");
-    const[editCommentId,setEditCommentId] = useState(null);
+    // 댓글 영역 시작
+    const [newComment, setNewComment] = useState(""); //새로운 댓글 저장 변수
+    const [comments, setComments] = useState([]); //백엔드에서 가져온 기존 댓글 배열
+    const [editingCommentContent, setEditingCommentContent] = useState("");
+    const [editingCommentId, setEditingCommentId] = useState(null);
+    const [commentErrors, setCommentErrors] = useState({});
 
     // const isCommentAuthor = user && user === comments.author.username;
 
@@ -92,29 +94,88 @@ function BoardDetail({user}) {
         return dateString.substring(0,10);
     }
 
-    // 댓글 등록
-    const handleCommentSubmit = () => {
+    //댓글 쓰기 함수->원 게시글의 id를 파라미터로 제출
+    const handleCommentSubmit = async (e) => { //백엔드에 댓글 저장 요청
+        e.preventDefault();   
+        setCommentErrors({});
+        if(!user) {
+            alert("로그인 후 가능합니다");
+        }
+        if (!newComment.trim()) {
+            alert("댓글 내용을 입력해주세요.");
+            return;
+        }
+        try {
+            await api.post(`/api/comments/${id}`, { content : newComment });
+            setNewComment("");
+            //댓글 리스트 불러오기 호출
+            loadComments(); //새 댓글 기존 댓글 리스트에 반영
+        } catch (err) {            
+            if (err.response && err.response.status === 400) {
+                setCommentErrors(err.response.data);
+            } else {
+                console.error(err);
+                alert("댓글 등록 실패!");
+            }
+        }        
+    };
 
+    //댓글 리스트 불러오기 함수
+    const loadComments = async () => {
+        try {
+            const res = await api.get(`/api/comments/${id}`);
+            //res->댓글 리스트 저장(ex:7번글에 달린 댓글 4개 리스트)
+            setComments(res.data);
+        } catch (err) {
+            console.error(err);
+            alert("댓글 리스트 불러오기 실패!");
+        }
+    };
+
+    //댓글 삭제 이벤트 함수
+    const handleCommentDelete = async (commentId) => {
+        if(!window.confirm("정말 삭제하시겠습니까?")) { //확인->true, 취소->false
+            return;
+        }
+        try {
+            await api.delete(`/api/comments/${commentId}`);
+            alert("댓글 삭제 성공!");
+            //navigate("/board");
+            loadComments(); //갱신된 댓글 리스트를 다시 로딩
+        } catch (err) {
+            console.error(err);
+            alert("댓글 삭제 권한이 없거나 삭제할 수 없는 댓글입니다.");
+        }
     }
 
-    // 댓글 삭제
-    const handleCommentDelete = (commentId) => {
-
+    //댓글 수정 이벤트 함수->백엔드 수정 요청
+    const handleCommentUpdate = async (commentId) => {
+        try {
+            await api.put(`/api/comments/${commentId}`, 
+                { content : editingCommentContent });
+            setEditingCommentId(null);
+            setEditingCommentContent("");
+            loadComments();
+        } catch (err) {
+            alert("댓글 수정 실패!");
+        }
     }
 
-    // 댓글 수정
-    const handleCommentUpdate = () => {
-
+    //댓글 수정 여부 확인
+    const handleCommentEdit = (comment) => {
+        setEditingCommentId(comment.id);
+        setEditingCommentContent(comment.content); 
+        //EditingCommentContent->수정할 내용으로 저장
     }
 
-    // 댓글 영역
+    // 댓글 영역 끝
 
     if(loading) return <p>게시글 불러오는 중</p>
     if(error) return <p style={{color:"red"}}>{error}</p>
     if(!post) return <p style={{color:"red"}}>존재하지 않는 글입니다.</p>
 
     // 로그인 상태이면서 로그인한 유저와 작성자가 일치하면 참
-    const isAuthor = user && user === post.author.username;
+    const isAuthor = user && user === post?.author?.username;
 
     return (
 
@@ -149,44 +210,81 @@ function BoardDetail({user}) {
                     </div>
 
                     {/* 댓글 영역 시작 */}
-                    <div className="comment-section">
-                        {/* 댓글 입력 세션 */}
-                        <h3>댓글</h3>
-                        <form onSubmit={handleCommentSubmit} className="comment-form">
-                            <textarea placeholder="댓글" value={newComment} onChange={(e) => setNewComment(e.target.value)}></textarea>
-                            <button type="submit" className="comment-button">등록</button>
-                        </form>
+                    <div className="comment-section">  
+                    {/* 댓글 입력 폼 시작! */}                  
+                    <h3>댓글 쓰기</h3>
+                    <form onSubmit={handleCommentSubmit} className="comment-form">
+                        <textarea placeholder="댓글을 입력하세요."
+                            value={newComment} onChange={(e) => setNewComment(e.target.value)}
+                        />
+                        {commentErrors.content && <p style={{color:"red"}}>{commentErrors.content}</p>}
+                        <button type="submit" className="comment-button">등록</button>
+                    </form>
+                    {/* 댓글 입력 폼 끝! */}
 
-                        {/* 댓글 리스트 세션 */}
-                        <ul className="comment-list">
-                            {comments.map((c)=>(
-                                <li key={c.id} className="comment-item">
-                                    <div className="comment-header">
-                                        <span className="comment-author">
-                                            {c.author.username}
-                                        </span>
-                                        <span className="comment-date">
-                                            {formatDate(c.createDate)}
-                                        </span>
-                                    </div>
-                                    
+                    {/* 기존 댓글 리스트 시작! */}
+                    <ul className="comment-list">
+                        {comments.length === 0 && <p style={{color:"blue"}}>아직 등록된 댓글이 없습니다.</p>}
+                        {comments.map((c)=>(
+                            <li key={c.id} className="comment-item">
+                                <div className="comment-header">
+                                    <span className="comment-author">
+                                        {c.author.username}
+                                    </span>
+                                    <span className="comment-date">
+                                        {formatDate(c.createDate)}
+                                    </span>
+                                </div>
+
+                            {editingCommentId === c.id ? (
+                                /* 댓글 수정 섹션 시작! */
+                                <>
+                                    <textarea value={editingCommentContent} 
+                                    onChange={(e) => setEditingCommentContent(e.target.value)}
+                                    />
+                                    <button className="comment-save"
+                                        onClick={() => handleCommentUpdate(c.id)}
+                                    >
+                                        저장
+                                    </button>
+                                    <button className="comment-cancel"
+                                        onClick={() => setEditingCommentId(null)}
+                                    >
+                                        취소
+                                    </button>
+                                </>
+                                /* 댓글 수정 섹션 끝! */
+                            ) : (
+
+                                /* 댓글 읽기 섹션 시작! */
+                                <>
                                     <div className="comment-content">
                                         {c.content}
                                     </div>
-
+                                    
                                     <div className="button-group">
-                                        <button onClick={() => navigate("/board")} className="list-button">목록</button>
-                                        { user === c.author.username && (
-                                        <>
-                                            {<button className="edit-button" onClick={() => handleCommentSubmit(c)}>수정</button>}
-                                            {<button className="delete-button" onClick={handleCommentDelete(c.id)}>삭제</button>}
+                                        {/* 로그인한 유저 본인이 쓴 댓글만 삭제 수정 가능 */}
+                                        {user === c.author.username && (
+                                        <>    
+                                            <button className="edit-button" 
+                                                onClick={() => handleCommentEdit(c)}>
+                                                수정
+                                            </button>
+                                            <button className="delete-button"
+                                                onClick={() => handleCommentDelete(c.id)}>
+                                                삭제
+                                            </button>
                                         </>
                                         )}
                                     </div>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                                </>
+                                /* 댓글 읽기 섹션 끝! */ 
+                              )}
+                            </li>
+                        ))}
+                    </ul>
+                    {/* 기존 댓글 리스트 끝! */}
+                </div>
                     {/* 댓글 영역 끝 */}
 
                 </>
